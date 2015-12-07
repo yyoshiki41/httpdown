@@ -16,6 +16,7 @@ import (
 
 	"github.com/facebookgo/clock"
 	"github.com/facebookgo/stats"
+	"github.com/stripe/go-einhorn/einhorn"
 )
 
 const (
@@ -112,7 +113,7 @@ func (h HTTP) ListenAndServe(s *http.Server) (Server, error) {
 			addr = ":https"
 		}
 	}
-	l, err := net.Listen("tcp", addr)
+	l, err := einhorn.GetListener(0)
 	if err != nil {
 		stats.BumpSum(h.Stats, "listen.error", 1)
 		return nil, err
@@ -349,6 +350,9 @@ func ListenAndServe(s *http.Server, hd *HTTP) error {
 	if err != nil {
 		return err
 	}
+	if err = einhorn.Ack(); err != nil {
+		log.Printf("fail to send ACK pid %d\n", os.Getpid())
+	}
 	log.Printf("serving on http://%s/ with pid %d\n", s.Addr, os.Getpid())
 
 	waiterr := make(chan error, 1)
@@ -358,7 +362,7 @@ func ListenAndServe(s *http.Server, hd *HTTP) error {
 	}()
 
 	signals := make(chan os.Signal, 10)
-	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT, syscall.SIGUSR2)
 
 	select {
 	case err := <-waiterr:

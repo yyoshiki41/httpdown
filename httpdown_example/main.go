@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/facebookgo/httpdown"
+	"github.com/yyoshiki41/httpdown"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	server := &http.Server{
-		Addr:    "127.0.0.1:8080",
 		Handler: http.HandlerFunc(handler),
 	}
 	hd := &httpdown.HTTP{
